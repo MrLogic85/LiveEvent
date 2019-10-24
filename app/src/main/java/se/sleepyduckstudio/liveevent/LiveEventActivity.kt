@@ -17,6 +17,7 @@ class LiveEventActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_live_event)
 
+        // Observe each LiveData twice to showcse that events can be handled by the first observer that consumes the event
         eventViewModel.string.observe(::getLifecycle) { text ->
             if (text != null) {
                 textView.append("$text\n")
@@ -31,22 +32,13 @@ class LiveEventActivity : AppCompatActivity() {
 
         eventViewModel.event.observe(::getLifecycle) { event ->
             if (event != null && !event.isHandled) {
-                event.isHandled = true
-                textView.append("${event.value}\n")
+                textView.append("${event.consume()}\n")
             }
         }
 
         eventViewModel.event.observe(::getLifecycle) { event ->
             if (event != null && !event.isHandled) {
-                event.isHandled = true
-                textView.append("${event.value}\n")
-            }
-        }
-
-        eventViewModel.event.observe(::getLifecycle) { event ->
-            if (event != null && !event.isHandled) {
-                event.isHandled = true
-                textView.append("${event.value}\n")
+                textView.append("${event.consume()}\n")
             }
         }
 
@@ -54,8 +46,16 @@ class LiveEventActivity : AppCompatActivity() {
             this,
             Observer { event ->
                 if (event != null && !event.isHandled) {
-                    event.isHandled = true
-                    textView.append("${event.value}\n")
+                    textView.append("${event.consume()}\n")
+                }
+            }
+        )
+
+        eventViewModel.liveEvent.observe(
+            this,
+            Observer { event ->
+                if (event != null && !event.isHandled) {
+                    textView.append("${event.consume()}\n")
                 }
             }
         )
